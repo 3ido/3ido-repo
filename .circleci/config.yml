@@ -2,65 +2,65 @@ version: 2.1
 
 commands: 
 
-destroy_environment:
-    steps:
-      - run:
-          name: Destroy environment
-          # ${CIRCLE_WORKFLOW_ID} is a Built-in environment variable 
-          # ${CIRCLE_WORKFLOW_ID:0:5} takes the first 5 chars of the variable CIRCLE_CI_WORKFLOW_ID 
-          when: on_fail
-          command: |
-            aws cloudformation delete-stack --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5}
+  destroy_environment:
+      steps:
+        - run:
+            name: Destroy environment
+            # ${CIRCLE_WORKFLOW_ID} is a Built-in environment variable 
+            # ${CIRCLE_WORKFLOW_ID:0:5} takes the first 5 chars of the variable CIRCLE_CI_WORKFLOW_ID 
+            when: on_fail
+            command: |
+              aws cloudformation delete-stack --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5}
 
 jobs:
 
- create_infrastructure: 
-    docker:
-      - image: amazon/aws-cli
-    steps:
-      - checkout
-      - run:
-          name: Create Cloudformation Stack
-          command: |
-            aws cloudformation deploy \
-              --template-file template.yml \
-              --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5} \
-              --region us-east-1
+   create_infrastructure: 
+      docker:
+        - image: amazon/aws-cli
+      steps:
+        - checkout
+        - run:
+            name: Create Cloudformation Stack
+            command: |
+              aws cloudformation deploy \
+                --template-file template.yml \
+                --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5} \
+                --region us-east-1
+                
+    configure_infrastructure: 
+      docker:
+        - image: python:3.7-alpine3.11
+      steps:
+        - checkout
+        - add_ssh_keys:
+                # You can get this ID in the section where you registered the SSH Key
+                fingerprints: ["67:a6:79:3d:1f:0d:14:70:06:13:83:4b:ad:9e:a9:08"] 
+        - run:
+            name: Install Ansible
+            command: |
+              apk add --update ansible
+        - run:
+            name: Run Playbook and Configure server
+            command: |
+              ansible-playbook -i inventory.txt main.yml
               
- configure_infrastructure: 
-    docker:
-      - image: python:3.7-alpine3.11
-    steps:
-      - checkout
-      - add_ssh_keys:
-              # You can get this ID in the section where you registered the SSH Key
-              fingerprints: ["67:a6:79:3d:1f:0d:14:70:06:13:83:4b:ad:9e:a9:08"] 
-      - run:
-          name: Install Ansible
-          command: |
-            apk add --update ansible
-      - run:
-          name: Run Playbook and Configure server
-          command: |
-            ansible-playbook -i inventory.txt main.yml
-            
     smoke_test:
-    docker:
-      - image: alpine:latest
-    steps:
-      - run: apk add --update curl
-      - run:
-          name: smoke test
-          command: |
-            URL="https://blog.udacityyy.com/"
-            # Test if website exists
-            if curl -s --head ${URL} 
-            then
-              return 0
-            else
-              return 1
-            fi
-      - destroy_environment 
+      docker:
+        - image: alpine:latest
+      steps:
+        - run: apk add --update curl
+        - run:
+            name: smoke test
+            command: |
+              URL="https://blog.udacityyy.com/"
+              # Test if website exists
+              if curl -s --head ${URL} 
+              then
+                return 0
+              else
+                return 1
+              fi
+        - destroy_environment 
           
 workflows:
   my_workflow:
