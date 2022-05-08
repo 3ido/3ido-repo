@@ -14,7 +14,7 @@ commands:
 
 jobs:
 
-   create_infrastructure: 
+    create_infrastructure: 
       docker:
         - image: amazon/aws-cli
       steps:
