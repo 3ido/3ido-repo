@@ -2,7 +2,7 @@ version: 2.1
 
 commands: 
 
-  destroy_environment:
+    destroy_environment:
       steps:
         - run:
             name: Destroy environment
@@ -63,7 +63,7 @@ jobs:
         - destroy_environment 
           
 workflows:
-  my_workflow:
+    my_workflow:
       jobs:
         - create_infrastructure
         - configure_infrastructure
