@@ -2,32 +2,20 @@ version: 2.1
 
 jobs:
 
-  save_hello_world_output:
+ create_infrastructure: 
     docker:
-      - image: circleci/node:13.8.0
+      - image: amazon/aws-cli
     steps:
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - output.txt
-      - run: 
+      - checkout
+      - run:
+          name: Create Cloudformation Stack
           command: |
-            echo "text to output here" > output.txt
-
-  print_output_file:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - attach_workspace:
-          at: ~/
-      - run: 
-          command: |
-            cat ~/output.txt
+            aws cloudformation deploy \
+              --template-file template.yml \
+              --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5} \
+              --region us-east-1
 
 workflows:
   my_workflow:
-    jobs: 
-      - save_hello_world_output
-      - print_output_file: 
-          requires:
-            - save_hello_world_output
+      jobs:
+        - create_infrastructure
