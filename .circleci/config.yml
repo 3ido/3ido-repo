@@ -26,31 +26,10 @@ jobs:
                 --template-file template.yml \
                 --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:7} \
                 --region us-east-1
-                
-    install_aws_cli:
-      docker:
-        - image: amazon/aws-cli
-      steps:
-        - checkout
-        - run:
-            name: install AWS CLI dependency
-            command: |
-              install-aws-cli
-    
-            
-    smoke_test:
-      docker:
-        - image: alpine:latest
-      steps:
-        - run: 
-            name: Test job
-            command: return 1
-        - destroy_environment
-          
-          
+        - run: return 1        
+        -destroy_environment
+        
 workflows:
     my_workflow:
       jobs:
         - create_infrastructure
-        - install_aws_cli
-        - smoke_test
