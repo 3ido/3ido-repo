@@ -27,6 +27,16 @@ jobs:
                 --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:7} \
                 --region us-east-1
                 
+    install_aws_cli:
+      docker:
+        - image: amazon/aws-cli
+      steps:
+        - checkout
+        - run:
+            name: install AWS CLI dependency
+            command: |
+              install-aws-cli
+    
             
     smoke_test:
       docker:
@@ -42,4 +52,5 @@ workflows:
     my_workflow:
       jobs:
         - create_infrastructure
+        - install_aws_cli
         - smoke_test
